@@ -1,1 +1,1 @@
-Some simple python script for daily usage
+Random python scripts 
