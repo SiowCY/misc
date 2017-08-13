@@ -1,2 +1,5 @@
 Random scripts for Windows:
-1. Capture local users password settings and login data
+1. Remotely capture local users password settings and last logon data using psexec
+
+Note:
+Please downlaod psexec from Microsoft Sysinternals Suite.
