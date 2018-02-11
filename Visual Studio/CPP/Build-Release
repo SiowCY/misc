@@ -1,0 +1,11 @@
+1. Stop Generating *.ipdb file and a *.iobj file:
+Project Properties -> Linker -> Optimization 
+Change "Link Time Code Generation" to something other than "Use Fast Link Time Code Generation (/LTCG:incremental)" (this is the default for Release builds).
+
+2. Preprocessor Denifition 
+Project Properties -> C/C++ -> Preprocessor 
+Change Preprocessor Definitions to _CRT_SECURE_NO_WARNINGS _WINSOCK_DEPRECATED_NO_WARNINGS
+
+3. Without Debug Information
+Project Properties -> Linker -> Debugging
+Change Generate Debug Info to No 
