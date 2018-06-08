@@ -11,58 +11,69 @@
 #								#
 #################################################################
 # ============================================================= #
-# WITH															
-#    asset_ips AS (
-#       SELECT asset_id, ip_address, type
-#       FROM dim_asset_ip_address dips
-#    ),
-#    asset_addresses AS (
-#       SELECT da.asset_id,
-#          (SELECT array_to_string(array_agg(ip_address), ',') FROM asset_ips WHERE asset_id = da.asset_id AND type = 'IPv4') AS ipv4s,
-#          (SELECT array_to_string(array_agg(ip_address), ',') FROM asset_ips WHERE asset_id = da.asset_id AND type = 'IPv6') AS ipv6s,
-#          (SELECT array_to_string(array_agg(mac_address), ',') FROM dim_asset_mac_address WHERE asset_id = da.asset_id) AS macs
-#       FROM dim_asset da
-#          JOIN asset_ips USING (asset_id)
-#    ),
-#    asset_names AS (
-#       SELECT asset_id, array_to_string(array_agg(host_name), ',') AS names
-#       FROM dim_asset_host_name
-#       GROUP BY asset_id
-#    ),
-#    asset_facts AS (
-#       SELECT asset_id, riskscore, exploits, malware_kits
-#       FROM fact_asset
-#    ),
-#    vulnerability_metadata AS (
-#       SELECT *
-#          
-#       FROM dim_vulnerability dv
-#    )
-# SELECT 
-#    ds.name AS "site",
-#    da.ip_address AS "ip", 
-#    --dos.name AS "Asset OS Name", dos.version AS "Asset OS Version",  
-#    --dsvc.name AS "Service Name",
-#    favi.port AS "port",
-#    vm.title AS "title",
-#    proofAsText(vm.description) AS "descrip",
-#    vm.severity AS "seve",
-#    proofAsText(dsol.fix) AS "sol"  
-#    
-# FROM fact_asset_vulnerability_instance favi
-#    JOIN dim_asset da USING (asset_id)
-#    LEFT OUTER JOIN asset_addresses aa USING (asset_id)
-#    LEFT OUTER JOIN asset_names an USING (asset_id)
-#    JOIN dim_operating_system dos USING (operating_system_id)
-#    JOIN asset_facts af USING (asset_id)
-#    JOIN dim_service dsvc USING (service_id)
-#    JOIN dim_protocol dp USING (protocol_id)
-#    JOIN dim_site_asset dsa USING (asset_id)
-#    JOIN dim_site ds USING (site_id)
-#    JOIN vulnerability_metadata vm USING (vulnerability_id)
-#    JOIN dim_vulnerability_solution dvss USING (vulnerability_id)
-#    JOIN dim_solution dsol USING(solution_id)
-#    JOIN dim_vulnerability_status dvs USING (status_id)
+#WITH
+#   vulnerability_metadata AS (
+#	  SELECT *
+#		 
+#	  FROM dim_vulnerability dv
+#   ),
+#   assets_grouped_by_site_and_vulnerability AS (
+#	  SELECT site_id, vulnerability_id, array_to_string(array_agg(ip_address || (CASE WHEN host_name IS NULL THEN '' ELSE ' (' || host_name || ')' END)), ', ') AS affected_assets
+#	  FROM fact_asset_vulnerability_finding
+#		 JOIN dim_asset USING (asset_id)
+#		 JOIN dim_site_asset USING (asset_id)
+#	  GROUP BY site_id, vulnerability_id
+#   ),
+#   best_solutions_for_vulnerabilities AS (
+#	  SELECT vulnerability_id, array_to_string(array_agg(ds.summary || ': ' || proofAsText(ds.fix)), E'\n\n') AS solutions
+#	  FROM dim_vulnerability_solution
+#		 JOIN dim_solution_highest_supercedence dshs USING (solution_id)
+#		 JOIN dim_solution ds ON ds.solution_id = dshs.superceding_solution_id
+#	  WHERE vulnerability_id IN (SELECT DISTINCT vulnerability_id FROM assets_grouped_by_site_and_vulnerability)
+#	  GROUP BY vulnerability_id
+#   ),
+#   vuln_cves_ids AS (
+#		SELECT vulnerability_id, array_to_string(array_agg(reference), ',') AS cves
+#		FROM dim_vulnerability_reference
+#		WHERE source = 'CVE'
+#		GROUP BY vulnerability_id
+#   )
+#SELECT 
+#   da.ip_address AS "ip_address",
+#   da.host_name as "Host Name",
+#   dos.name AS "OS", 
+#   dos.version AS "OS Version",  
+#   vm.title AS "Title",
+#   proofAsText(vm.description) AS "description",
+#	solutions AS "fix",
+#	proofAsText(favi.proof) as "summary",	
+#   round(vm.cvss_score::numeric, 1) AS "Original CVSS Score",
+#   vcves.cves AS "Vulnerability CVE IDs",
+#	CASE
+#		WHEN vm.cvss_score = 10 THEN
+#		'Critical'
+#		WHEN vm.cvss_score BETWEEN 7
+#		AND 9.9 THEN
+#		'High'
+#		WHEN vm.cvss_score BETWEEN 4
+#		AND 6.9 THEN
+#		'Medium'
+#		WHEN vm.cvss_score BETWEEN 0
+#		AND 3.9 THEN
+#		'Low'
+#	END AS "Original Severity",
+#	   CASE
+#		WHEN favi.port = -1 THEN
+#		'0'
+#		WHEN favi.port = favi.port THEN
+#		favi.port
+#	END AS "Port"
+#FROM fact_asset_vulnerability_instance favi
+#   JOIN dim_asset da USING (asset_id)
+#   JOIN dim_operating_system dos USING (operating_system_id)
+#   JOIN vulnerability_metadata vm USING (vulnerability_id)
+#   JOIN best_solutions_for_vulnerabilities USING (vulnerability_id)
+#   LEFT OUTER JOIN vuln_cves_ids vcves USING (vulnerability_id)
 # 
 # ============================================================= #
 #################################################################
