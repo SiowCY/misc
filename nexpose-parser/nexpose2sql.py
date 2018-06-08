@@ -1,19 +1,14 @@
 
 """
 #################################################################
-# This script will input the CSV file from Nexpose and convert 	# 
-# it into Celcom Security Assessment CSV format. Tester only   	#
-# required to input the Nexpose CSV file through -i argument.	#
-# 																#
-#																#
-# Example: python report-gen.py -i <Nexpose.csv>				#
+# Example: python report-gen.py -i <Nexpose.csv>		#
 # The output for the csv file name will be Nexpose-edited.csv	#
-#																#
-# Created by Yik - Feels free to edit							#
-#																#
-# Please use the following SQL Query to export the CSV from		#
+#								#
+# Created by Yik - Feels free to edit				#
+#								#
+# Please use the following SQL Query to export the CSV from	#
 # Nexpose, else this script will not able to generate the CSV	#
-#																#
+#								#
 #################################################################
 # ============================================================= #
 # WITH															
