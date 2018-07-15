@@ -181,17 +181,17 @@ def filling_dict():
         print(name + " will go to " + response + " in this summer.")
 
 def read_file():
-    with open('readme.txt') as rfile:
+    with open('readfile.txt') as rfile:
         full_read = rfile.read()
         print("Full read contents.")
         print(full_read)
 
-    with open( 'readme.txt' ) as rfile:
+    with open( 'readfile.txt' ) as rfile:
         for rline in rfile.readlines():
             print("Read line by line.")
             print("Current line: " + rline)
 
-    with open('readme.txt') as rfile:
+    with open('readfile.txt') as rfile:
         for rline in rfile.readlines():
             rline = rline.rstrip()
             print ("Read line by line with rstrip.")
