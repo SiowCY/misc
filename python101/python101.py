@@ -1,5 +1,18 @@
-import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3
+import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3, urllib, multiprocessing, scapy
+import urllib3, ssl, _thread, requests, time, threading
 import xml.etree.ElementTree as ET
+
+#####  SSL Self Sign Error Solution  #####
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    # Legacy Python that doesn't verify HTTPS certificates by default
+    pass
+else:
+    # Handle target environment that doesn't support HTTPS verification
+    ssl._create_default_https_context = _create_unverified_https_context
+
+#####                               #####
 
 class Class1():
 
@@ -181,17 +194,17 @@ def filling_dict():
         print(name + " will go to " + response + " in this summer.")
 
 def read_file():
-    with open('readfile.txt') as rfile:
+    with open('readme.txt') as rfile:
         full_read = rfile.read()
         print("Full read contents.")
         print(full_read)
 
-    with open( 'readfile.txt' ) as rfile:
+    with open( 'readme.txt' ) as rfile:
         for rline in rfile.readlines():
             print("Read line by line.")
             print("Current line: " + rline)
 
-    with open('readfile.txt') as rfile:
+    with open('readme.txt') as rfile:
         for rline in rfile.readlines():
             rline = rline.rstrip()
             print ("Read line by line with rstrip.")
@@ -219,6 +232,115 @@ def exception_file():
     except:
         print("File not found!")
 
+def server_socket():
+    host = None
+    port = 1337
+    s = None
+    
+    for server_info in socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
+        af, socktype, proto, canonname, sa = res
+        try:
+            s = socket.socket(af, socktype, proto)
+        except OSError as msg:
+            s = None
+            continue
+        try:
+            s.bind(sa)
+            s.listen(1)
+        except OSError as msg:
+            s.close()
+            s = None
+            continue
+        break
+    if s is None:
+        print("Failed to open socket.")
+    conn, addr = s.accept()
+    with conn:
+        print("Successfully connected!")
+
+class lib_socket():
+
+    def __init__(self):
+        pass
+
+    def nonssl(self):
+        # Set default timeout duration 5 seconds
+        socket.setdefaulttimeout( 5 )
+        print( "\nUsing socket without ssl:\n" )
+        # Create socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Declare host and port
+        target = "google.com"
+        port = 80
+        # Get address info
+        t_info = socket.getaddrinfo(target, port, 0, 0, socket.IPPROTO_TCP)
+        print ("Target info: ")
+        print (t_info)
+        print ("Target IP addr: " + t_info[0][4][0])
+        #
+        ip_addr = t_info[0][4][0]
+        s.connect((ip_addr,port))
+        # In python 2, s.send('GET / HTTP/1.0\r\n')
+        # In python 3, data has to be send using byte array
+        s.send(b'GET / HTTP/1.0\r\n\r\n')
+        resp = s.recv(1024)
+
+        print(resp.decode( "utf8" ))
+
+    def sslr(self):
+        # Set default timeout duration 5 seconds
+        socket.setdefaulttimeout( 5 )
+        print("\nUsing socket with ssl:\n")
+        context = ssl.create_default_context()
+        target = "youtube.com"
+        port = 443
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ssl_s = context.wrap_socket(s, server_hostname = target)
+        ssl_s.connect((target,port))
+        ssl_s.send(b'GET / HTTP/1.0\r\n\r\n')
+        resp = ssl_s.recv( 1024 )
+        print( resp.decode( "utf8" ) )
+
+class multithreading_():
+
+    def __init__(self):
+        pass
+    def visit(self, url):
+        req = requests.get(url)
+        print("Visited Website: " + url)
+    def no_threading(self):
+        start = time.time()
+        urls = [
+            'http://www.google.com',
+            'http://www.youtube.com',
+            'http://www.facebook.com',
+            'http://github.com',
+            'http://twitter.net',
+            'http://outlook.live.com']
+        for url in urls:
+            self.visit(url)
+        end = time.time()
+        duration = end - start
+        print("Total time used to visit without threading: " + str(duration))
+    def with_threading(self):
+        print("===== Threading =====")
+        start = time.time()
+        THREADS = []
+        urls = [
+            'http://www.google.com',
+            'http://www.youtube.com',
+            'http://www.facebook.com',
+            'http://github.com',
+            'http://twitter.net',
+            'http://outlook.live.com']
+        for url in urls:
+            print( "Start worker threading" )
+            wthread = threading.Thread( target=self.visit, args=(url,) )
+            THREADS.append(wthread)
+            wthread.start()
+        end = time.time()
+        duration = end - start
+        print( "Total time used to visit with threading: " + str( duration ) )
 
 
 # Testing on Class1 #
@@ -279,3 +401,16 @@ read_file()
 
 # Exceptional handling
 exception_file()
+
+# Using socket library
+s = lib_socket()
+nonssl = s.nonssl()
+ssl_s = s.sslr()
+
+# Process creation
+
+
+# Threading
+t = multithreading_()
+t.no_threading()
+t.with_threading()
