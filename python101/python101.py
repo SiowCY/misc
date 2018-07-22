@@ -1,6 +1,11 @@
-import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3, urllib, multiprocessing, scapy
+import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3, multiprocessing, scapy
 import urllib3, ssl, _thread, requests, time, threading
 import xml.etree.ElementTree as ET
+
+# urliib require to import one by one
+import urllib.request
+import urllib.parse
+import urllib.error
 
 #####  SSL Self Sign Error Solution  #####
 try:
@@ -266,7 +271,7 @@ class lib_socket():
     def nonssl(self):
         # Set default timeout duration 5 seconds
         socket.setdefaulttimeout( 5 )
-        print( "\nUsing socket without ssl:\n" )
+        print( "\n[+] Using socket without ssl:\n" )
         # Create socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Declare host and port
@@ -290,7 +295,7 @@ class lib_socket():
     def sslr(self):
         # Set default timeout duration 5 seconds
         socket.setdefaulttimeout( 5 )
-        print("\nUsing socket with ssl:\n")
+        print("\n[+] Using socket with ssl:\n")
         context = ssl.create_default_context()
         target = "youtube.com"
         port = 443
@@ -301,12 +306,104 @@ class lib_socket():
         resp = ssl_s.recv( 1024 )
         print( resp.decode( "utf8" ) )
 
+class web_urllib():
+    def __init__(self):
+        pass
+    def send_req(self):
+        print("\n[+] Visit website using urllib: ")
+        url = 'https://www.google.com'
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+
+        print("Response: " + str(resp.code))
+
+        print("Response headears:")
+        for key, value in resp.headers.items():
+            print(key + " : " + value)
+
+        # Custom headers
+        ua = 'Random UA Value'
+        headers = {'User-Agent' : ua}
+        req_h = urllib.request.Request(url, headers)
+
+        # Exception
+        url_f = 'https://www.google.com/failed'
+        req_f = urllib.request.Request(url_f)
+        try:
+            resp = urllib.request.urlopen(req_f)
+        except urllib.error.HTTPError as e:
+            print("HTTP Error code: " + str(e.code))
+            print("HTML Error: " + str(e.read()))
+        except urllib.error.URLError as e:
+            print("URL Error of reaching: " + str(e.reason))
+
+    def post_req(self):
+        scontext = ssl.SSLContext( ssl.PROTOCOL_TLSv1 )
+        print("[+] Post request using urllib: ")
+        url = 'https://www.base64decode.org/'
+        headers = {'Cookie': '_ga=GA1.2.689099105.1532255640; _gid=GA1.2.422439299.1532255641; _gat=1'}
+        values = {'input': 'cHl0aG9uIHVybGxpYg==', 'decode': 'decode', 'charset': 'UTF-8'}
+        data = urllib.parse.urlencode( values )
+        data = data.encode( 'ascii' )
+        req3 = urllib.request.Request( url, data, headers )
+        resp = urllib.request.urlopen( req3, context=scontext )
+        print("Post Request Response HTML: ")
+        print(resp.read()[0:50])
+
+
+class web_urllib3():
+    def __init__(self):
+        pass
+    def send_req(self):
+        urllib3.disable_warnings()  # Disable SSL Warning
+        print("[+] Visit website using urllib3: ")
+        url = 'https://www.google.com'
+        http = urllib3.PoolManager() #Default maximum of 10 ConnectionPool (10 hosts)
+        req = http.request('GET', url, preload_content=False) #preload_content to stream the response content
+        print("Response from urllib3: ")
+        print(req.read(32))
+        # Proxy
+        # proxy = urllib3.ProxyManager('http://proxy.localhost.com:8008')
+        # proxy.request('GET', url, preload_content=False)
+        # Response Code
+        print("HTTP Response Stauts Code: " + str(req.status))
+        # Resposnse Headers
+        for key, value in req.headers.items():
+            print(key + " : " + value)
+        # Custom Header request
+        req.release_conn() # To release the http connection due to preload_content = False then you can reuse the Pool
+        req_h = http.request('GET', url, headers={'Random Headers' : 'Random Value'}, preload_content=False)
+        req_h.release_conn()
+
+class web_request():
+    def __init__(self):
+        pass
+    def send_req_ssl(self):
+        print("[+] Using Requests Library")
+        url = 'https://www.google.com'
+        req = requests.get(url, verify=False) # Use verify = False to ignore SSL Error
+        resp_code = req.status_code
+        print("HTTP Response Code:" + str(resp_code))
+        headers = req.headers
+        print("Headers information: ")
+        for key, value in headers.items():
+            print(key + " : " + value)
+        print("First 50 strings response in HTML: ")
+        resp_html = req.text
+        print(resp_html[0:50])
+        # Custom Header
+        r_headers = {'user-agent' : 'Requests Custom Header Sample/0.0.1'}
+        req = requests.get(url, headers=r_headers, verify=False)
+        # Proxies
+        # proxy = {'http' : 'http://proxy.localhost.com:8080', 'https' : 'https://proxy.localhost.com:8083'}
+        #req = requests.get( url, headers=r_headers, proxies=proxy )
+
 class multithreading_():
 
     def __init__(self):
         pass
     def visit(self, url):
-        req = requests.get(url)
+        req = requests.get(url, verify=False)
         print("Visited Website: " + url)
     def no_threading(self):
         start = time.time()
@@ -406,6 +503,19 @@ exception_file()
 s = lib_socket()
 nonssl = s.nonssl()
 ssl_s = s.sslr()
+
+# Using urllib library
+u1 = web_urllib()
+u1.send_req()
+u1.post_req()
+
+# Using urllib3 library
+u3 = web_urllib3()
+u3.send_req()
+
+# Using requests library
+r = web_request()
+r.send_req_ssl()
 
 # Process creation
 
