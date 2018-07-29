@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<thisisroot>
+	<thisischild iamtag = "get_this">
+		<findme>1</findme>
+		<iter_me year="2018" month="July" date="27"/>
+	</thisischild>
+	
+	<thisischild iamtag = "get_this2">
+		<findme>2</findme>
+		<iter_me year="2019" month="August" date="28"/>
+		<weird_me name="get_me_too"/>
+	</thisischild>
+	
+	<thisischild iamtag = "get_this3">
+		<findme>3</findme>
+		<ifnone>I am not None Type!</ifnone>
+		<iter_me year="2020" month="September" date="29"/>
+	</thisischild>
+</thisisroot>
