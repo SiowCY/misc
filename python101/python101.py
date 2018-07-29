@@ -1,6 +1,6 @@
 import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3, multiprocessing, scapy
-import urllib3, ssl, _thread, requests, time, threading
-import xml.etree.ElementTree as ET
+import urllib3, ssl, _thread, requests, time, threading, binascii
+import xml.etree.ElementTree as et
 
 # urliib require to import one by one
 import urllib.request
@@ -341,15 +341,13 @@ class web_urllib():
         scontext = ssl.SSLContext( ssl.PROTOCOL_TLSv1 )
         print("[+] Post request using urllib: ")
         url = 'https://www.base64decode.org/'
-        headers = {'Cookie': '_ga=GA1.2.689099105.1532255640; _gid=GA1.2.422439299.1532255641; _gat=1'}
         values = {'input': 'cHl0aG9uIHVybGxpYg==', 'decode': 'decode', 'charset': 'UTF-8'}
         data = urllib.parse.urlencode( values )
         data = data.encode( 'ascii' )
-        req3 = urllib.request.Request( url, data, headers )
+        req3 = urllib.request.Request( url, data)
         resp = urllib.request.urlopen( req3, context=scontext )
         print("Post Request Response HTML: ")
         print(resp.read()[0:50])
-
 
 class web_urllib3():
     def __init__(self):
@@ -375,11 +373,15 @@ class web_urllib3():
         req_h = http.request('GET', url, headers={'Random Headers' : 'Random Value'}, preload_content=False)
         req_h.release_conn()
 
+    def post_req(self):
+        pass
+        # Post method for urllib wih query parameter can use urllib
+
 class web_request():
     def __init__(self):
         pass
     def send_req_ssl(self):
-        print("[+] Using Requests Library")
+        print("[+] Visit website using requests: ")
         url = 'https://www.google.com'
         req = requests.get(url, verify=False) # Use verify = False to ignore SSL Error
         resp_code = req.status_code
@@ -397,6 +399,56 @@ class web_request():
         # Proxies
         # proxy = {'http' : 'http://proxy.localhost.com:8080', 'https' : 'https://proxy.localhost.com:8083'}
         #req = requests.get( url, headers=r_headers, proxies=proxy )
+
+    def post_req(self):
+        print("[+] Post request using requests: ")
+        url = 'https://www.base64decode.org/'
+        r_headers = {'Cookie': '_ga=GA1.2.689099105.1532255640; _gid=GA1.2.422439299.1532255641; _gat=1'}
+        values = {'input': 'cHl0aG9uIHJlcXVlc3Rz', 'decode': 'decode', 'charset': 'UTF-8'}
+        req = requests.post(url, headers=r_headers, data=values)
+        print( "Post Request Response HTML: " )
+        print( req.text[0:50])
+
+class open_subprocess():
+    def __init__(self):
+        pass
+
+    def subproc(self):
+        new_proc = subprocess.Popen(['dir'],shell=True,stdout=subprocess.PIPE)
+        byte_proc = new_proc.stdout.read()
+        string_proc = byte_proc.decode('utf-8')
+        for dirlist in string_proc.strip().split('\r\n'):
+            print (dirlist)
+
+
+class multiprocessing_():
+    def __init__(self):
+        pass
+
+    def visit(self, url):
+        req = requests.get( url, verify=False )
+        print( "Visited Website: " + url )
+
+    def more_process(self):
+        start = time.time()
+        processes = []
+        urls = [
+            'http://www.google.com',
+            'http://www.youtube.com',
+            'http://www.facebook.com',
+            'http://github.com',
+            'http://twitter.net',
+            'http://outlook.live.com']
+        for url in urls:
+            p = multiprocessing.Process(target=self.visit( url ))
+            processes.append(p)
+            p.start()
+            print("PID: ", p.pid)
+            p.terminate()
+        end = time.time()
+        duration = end - start
+        print( "Total time used for visit with multiprocessing: " + str( duration ) )
+
 
 class multithreading_():
 
@@ -438,6 +490,40 @@ class multithreading_():
         end = time.time()
         duration = end - start
         print( "Total time used to visit with threading: " + str( duration ) )
+
+def pyxml():
+    t = et.parse( 'pyxml.xml' )
+    root = t.getroot()
+    print( "This is root: " + root.tag )
+    for child in root:
+        print( "Getting the attribute:" )
+        for key, value in child.attrib.items():
+            print( key + " " + value )
+        print( "This is child tag: " + child.tag )
+        # Using get method
+        print( "This is child get: " + child.get( 'iamtag' ) )
+
+    # Using findall method
+    for thisischild in root.findall( 'thisischild' ):
+        # Using find method and text
+        findme = thisischild.find( 'findme' ).text
+        gethis = thisischild.get( 'iamtag' )
+        print( "Inside findall loop" )
+        print( "This is findme: " + findme )
+        print( "This is getthis: " + gethis )
+        # Some tag is not available will mark as None
+        try:
+            ifnone = thisischild.find( 'ifnone' ).text
+            if ifnone != None:
+                print( ifnone )
+        except:
+            print( "No ifnone child" )
+        try:
+            weird_me = thisischild.find( 'weird_me' ).get( 'name' )
+            if weird_me != None:
+                print( weird_me )
+        except:
+            print( "No weird_me child" )
 
 
 # Testing on Class1 #
@@ -516,11 +602,20 @@ u3.send_req()
 # Using requests library
 r = web_request()
 r.send_req_ssl()
+r.post_req()
 
 # Process creation
+sp = open_subprocess()
+sp.subproc()
 
+# Multiprocessing
+p = multiprocessing_()
+p.more_process()
 
 # Threading
 t = multithreading_()
 t.no_threading()
 t.with_threading()
+
+# XML parsing
+pyxml()
