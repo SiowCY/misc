@@ -1,6 +1,7 @@
 import socket, subprocess, os, struct, csv, json, sys, argparse, sqlite3, multiprocessing, scapy
-import urllib3, ssl, _thread, requests, time, threading, binascii
+import urllib3, ssl, _thread, requests, time, threading, binascii, xml, collections, re
 import xml.etree.ElementTree as et
+from lxml import etree
 
 # urliib require to import one by one
 import urllib.request
@@ -95,6 +96,7 @@ class list_c():
       #  self.item_5 = None
 
     def list_m1(self):
+        print("\n[+] Inside Listing Function\n")
         create_list = [self.item_1, self.item_2, self.item_3, self.item_4]
         #print (any(item is None for item in create_list))
         print("First item in list: " + create_list[0])
@@ -119,6 +121,7 @@ class dict_c1():
         pass
 
     def dict_m1(self, key_1, value_1, value_2):
+        print("\n[+] Inside dictionary function\n")
         self.key_1 = key_1
         self.value_1 = value_1
         self.value_2 = value_2
@@ -127,6 +130,7 @@ class dict_c1():
         print(dict1.values())
 
     def nest_dict(self):
+        print("\n[+] Inside nesting dictionary function\n")
         nestA = {'birds' : ['eagle','owl','falcon'],'speed' : 'fast', 'genre' : 'hunt'}
         nestB = {'birds' : ['parrot','parrow','pigeon'], 'speed' : 'normal', 'genre' : 'kind'}
         nestC = {'birds' : ['chicken','duck'], 'speed' : 'slow', 'genre' : 'pet'}
@@ -138,11 +142,12 @@ class dict_c1():
 
 # Normal Function
 def user_input():
+    print("\n[+] Inside normal user input function\n")
     name = input("Please insert your name: ")
     print("Hello, " + name + ". Welcome to Python 101!\n")
 
 def looping_input():
-    print("Inside looping!")
+    print("\n[+] Inside looping!\n")
     name = ""
     while name != 'quit':
         name = input( "Please insert your name: " )
@@ -152,7 +157,7 @@ def looping_input():
             print( "Hello, " + name + ". Welcome to Python 101!\n" )
 
 def flag_input():
-        print("Inside flag looping!")
+        print("\n[+] Inside flag looping!\n")
         name = ""
         active = True
         while active:
@@ -168,7 +173,7 @@ def flag_input():
                 print( "Hello, " + name + ". Welcome to Python 101!\n" )
 
 def filling_dict():
-    print("Inside filling dictionary.")
+    print("\n[+] Inside filling dictionary.\n")
     # Declare blank dictionary
     responses = {}
     # Active True
@@ -199,6 +204,7 @@ def filling_dict():
         print(name + " will go to " + response + " in this summer.")
 
 def read_file():
+    print ("\n[+] Inside read file function\n")
     with open('readme.txt') as rfile:
         full_read = rfile.read()
         print("Full read contents.")
@@ -230,6 +236,7 @@ def read_file():
         print (read_all)
 
 def exception_file():
+    print ("\n[+] Inside exception function\n")
     try:
         with open('readno.txt') as rfile:
             rlines = rfile.read()
@@ -241,7 +248,7 @@ def server_socket():
     host = None
     port = 1337
     s = None
-    
+    print ("\n[+] Inside server socket function\n")
     for server_info in socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
         af, socktype, proto, canonname, sa = res
         try:
@@ -339,7 +346,7 @@ class web_urllib():
 
     def post_req(self):
         scontext = ssl.SSLContext( ssl.PROTOCOL_TLSv1 )
-        print("[+] Post request using urllib: ")
+        print("\n[+] Post request using urllib: \n")
         url = 'https://www.base64decode.org/'
         values = {'input': 'cHl0aG9uIHVybGxpYg==', 'decode': 'decode', 'charset': 'UTF-8'}
         data = urllib.parse.urlencode( values )
@@ -354,7 +361,7 @@ class web_urllib3():
         pass
     def send_req(self):
         urllib3.disable_warnings()  # Disable SSL Warning
-        print("[+] Visit website using urllib3: ")
+        print("\n[+] Visit website using urllib3: \n")
         url = 'https://www.google.com'
         http = urllib3.PoolManager() #Default maximum of 10 ConnectionPool (10 hosts)
         req = http.request('GET', url, preload_content=False) #preload_content to stream the response content
@@ -381,7 +388,7 @@ class web_request():
     def __init__(self):
         pass
     def send_req_ssl(self):
-        print("[+] Visit website using requests: ")
+        print("\n[+] Visit website using requests: \n")
         url = 'https://www.google.com'
         req = requests.get(url, verify=False) # Use verify = False to ignore SSL Error
         resp_code = req.status_code
@@ -401,7 +408,7 @@ class web_request():
         #req = requests.get( url, headers=r_headers, proxies=proxy )
 
     def post_req(self):
-        print("[+] Post request using requests: ")
+        print("\n[+] Post request using requests: \n")
         url = 'https://www.base64decode.org/'
         r_headers = {'Cookie': '_ga=GA1.2.689099105.1532255640; _gid=GA1.2.422439299.1532255641; _gat=1'}
         values = {'input': 'cHl0aG9uIHJlcXVlc3Rz', 'decode': 'decode', 'charset': 'UTF-8'}
@@ -414,6 +421,7 @@ class open_subprocess():
         pass
 
     def subproc(self):
+        print("\n[+] Inside subprocess function \n")
         new_proc = subprocess.Popen(['dir'],shell=True,stdout=subprocess.PIPE)
         byte_proc = new_proc.stdout.read()
         string_proc = byte_proc.decode('utf-8')
@@ -430,6 +438,7 @@ class multiprocessing_():
         print( "Visited Website: " + url )
 
     def more_process(self):
+        print("\n[+] Inside multi processing function\n")
         start = time.time()
         processes = []
         urls = [
@@ -458,6 +467,8 @@ class multithreading_():
         req = requests.get(url, verify=False)
         print("Visited Website: " + url)
     def no_threading(self):
+        print("\n[+] Inside multithreading function\n")
+        print( "===== No Threading =====" )
         start = time.time()
         urls = [
             'http://www.google.com',
@@ -492,6 +503,7 @@ class multithreading_():
         print( "Total time used to visit with threading: " + str( duration ) )
 
 def pyxml():
+    print("\n[+] Inside xml.etree.ElementTree\n")
     t = et.parse( 'pyxml.xml' )
     root = t.getroot()
     print( "This is root: " + root.tag )
@@ -525,8 +537,57 @@ def pyxml():
         except:
             print( "No weird_me child" )
 
+    # Using iter method
+    for iter_me in root.iter( 'iter_me' ):
+        for key, value in iter_me.attrib.items():
+            print( "Inside iter_me: Key= " + key + "\tValue= " + value )
+
+    for iter_you in root.iter( 'iter_you' ):
+        for key, value in iter_you.attrib.items():
+            print( "Inside iter_you: Key= " + key + "\tValue= " + value )
+
+    print( "" )
+    # Using listing format
+    print( "This is root[0].tag= " + root[0].tag )
+    print( "This is root[0].attrib from " + root[0].tag )
+    for key, value in root[0].attrib.items():
+        print( "Key: " + key + "\tValue: " + value )
+    print( "This is root[0][0].tag= " + root[0][0].tag )
+    print( "This is root[0][0].text= " + root[0][0].text )
+    print( "This is root[0][1].tag= " + root[0][1].tag )
+    print( "This is root[0][1].attrib from " + root[0][1].tag )
+    for key, value in root[0][1].attrib.items():
+        print( "Key: " + key + "\tValue: " + value )
+    print( "This is root[0][2].tag= " + root[0][2].tag )
+    print( "This is root[0][2][0].tag= " + root[0][2][0].tag )
+    print( "This is root[0][2][0].text= " + root[0][2][0].text )
+    print( "This is root[0][2][1].tag= " + root[0][2][1].tag )
+    print( "This is root[0][2][1].attrib from " + root[0][2][1].tag )
+    for key, value in root[0][2][1].attrib.items():
+        print( "Key: " + key + "\tValue: " + value )
+
+def pylxml():
+    print("\n[+] Inside lxml etree view by tree list\n")
+    xmlfile = open( 'pyxml.xml', 'r' )
+    read_xml = xmlfile.read()
+    xml_root = etree.fromstring( read_xml )
+    raw_tree = etree.ElementTree( xml_root )
+    nice_tree = collections.OrderedDict()
+
+    for tag in xml_root.iter():
+        path = re.sub( '\[[0-9]+\]', '', raw_tree.getpath( tag ) )
+        if path not in nice_tree:
+            nice_tree[path] = []
+        if len( tag.keys() ) > 0:
+            nice_tree[path].extend( attrib for attrib in tag.keys() if attrib not in nice_tree[path] )
+
+    for path, attribs in nice_tree.items():
+        indent = int( path.count( '/' ) - 1 )
+        print( '{0}{1}: {2} [{3}]'.format( '    ' * indent, indent, path.split( '/' )[-1],
+                                           ', '.join( attribs ) if len( attribs ) > 0 else '-' ) )
 
 # Testing on Class1 #
+print("[+] Inside class function")
 my_class = Class1("this is 1", 1)
 print(my_class.method1())
 
@@ -589,33 +650,43 @@ exception_file()
 s = lib_socket()
 nonssl = s.nonssl()
 ssl_s = s.sslr()
+time.sleep(2)
 
 # Using urllib library
 u1 = web_urllib()
 u1.send_req()
 u1.post_req()
+time.sleep(2)
 
 # Using urllib3 library
 u3 = web_urllib3()
 u3.send_req()
+time.sleep(2)
 
 # Using requests library
 r = web_request()
 r.send_req_ssl()
 r.post_req()
+time.sleep(2)
 
 # Process creation
 sp = open_subprocess()
 sp.subproc()
+time.sleep(2)
 
 # Multiprocessing
 p = multiprocessing_()
 p.more_process()
+time.sleep(2)
 
 # Threading
 t = multithreading_()
 t.no_threading()
 t.with_threading()
+time.sleep(2)
 
 # XML parsing
 pyxml()
+
+# XML using lxml tree list
+pylxml()
