@@ -3,6 +3,10 @@
 	<thisischild iamtag = "get_this">
 		<findme>1</findme>
 		<iter_me year="2018" month="July" date="27"/>
+		<morechild iamchild2 = "get_child2">
+			<deeper_me>-1</deeper_me>
+			<iter_you hour="07" minute="17" second="27"/>
+		</morechild>
 	</thisischild>
 	
 	<thisischild iamtag = "get_this2">
