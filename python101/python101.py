@@ -690,3 +690,9 @@ pyxml()
 
 # XML using lxml tree list
 pylxml()
+
+# Hex, Decimal and Ascii conversion
+Hex2ascII = "41".decode("hex")
+Ascii2heX = hex(65)
+Decimal2ascII = chr(65)
+Ascii2decimaL = int("A")
